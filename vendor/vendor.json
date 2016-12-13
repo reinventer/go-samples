@@ -13,6 +13,12 @@
 			"revisionTime": "2016-11-23T18:52:04Z"
 		},
 		{
+			"checksumSHA1": "8y2L8CpqHGPJLTQg+hK65tzNK98=",
+			"path": "github.com/jackc/pgx/stdlib",
+			"revision": "e96c105b55d469fddef56bfa7db5ecc7ab31d7b2",
+			"revisionTime": "2016-11-23T18:52:04Z"
+		},
+		{
 			"checksumSHA1": "ZtoqVjpOE8VF9n6Ebqyu4vTUYas=",
 			"path": "github.com/jinzhu/inflection",
 			"revision": "74387dc39a75e970e7a3ae6a3386b5bd2e5c5cff",
