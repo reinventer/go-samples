@@ -14,6 +14,8 @@ import (
 	"gopkg.in/pg.v5"
 )
 
+const query = "SELECT 1"
+
 var (
 	num                                int
 	err                                error
@@ -45,9 +47,14 @@ func BenchmarkPq(b *testing.B) {
 	db.SetMaxOpenConns(15)
 	db.SetMaxIdleConns(5)
 
+	stmt, err := db.Prepare(query)
+	if err != nil {
+		b.Fatal(err)
+	}
+
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			if err = db.QueryRow("SELECT 1").Scan(&num); err != nil {
+			if err = stmt.QueryRow().Scan(&num); err != nil {
 				b.Fatal(err)
 			}
 		}
@@ -65,7 +72,7 @@ func BenchmarkPg(b *testing.B) {
 
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			if _, err = db.Query(pg.Scan(&num), "SELECT 1"); err != nil {
+			if _, err = db.Query(pg.Scan(&num), query); err != nil {
 				b.Fatal(err)
 			}
 		}
@@ -82,9 +89,11 @@ func BenchmarkPgxSql(b *testing.B) {
 	db.SetMaxOpenConns(15)
 	db.SetMaxIdleConns(5)
 
+	stmt, err := db.Prepare(query)
+
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			if err = db.QueryRow("SELECT 1").Scan(&num); err != nil {
+			if err = stmt.QueryRow().Scan(&num); err != nil {
 				b.Fatal(err)
 			}
 		}
@@ -107,9 +116,14 @@ func BenchmarkPgxPure(b *testing.B) {
 	}
 	defer pool.Close()
 
+	_, err = pool.Prepare("testquery", query)
+	if err != nil {
+		b.Fatal(err)
+	}
+
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			if err = pool.QueryRow("SELECT 1").Scan(&num); err != nil {
+			if err = pool.QueryRow("testquery").Scan(&num); err != nil {
 				b.Fatal(err)
 			}
 		}
