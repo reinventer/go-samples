@@ -13,13 +13,16 @@ type Backoffer interface {
 	Stop()
 }
 
-func New(slotTime time.Duration, maxTime time.Duration) *Backoffer {
-	rand.Seed(time.Now().Nanosecond())
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
 
+func New(slotTime time.Duration, maxTime time.Duration) Backoffer {
 	b := &backoff{
 		c:       make(chan struct{}),
 		done:    make(chan struct{}),
 		stopped: make(chan struct{}),
+		reset:   make(chan struct{}),
 	}
 
 	go b.run(slotTime, maxTime)
@@ -32,6 +35,7 @@ type backoff struct {
 	c        chan struct{}
 	done     chan struct{}
 	stopped  chan struct{}
+	reset    chan struct{}
 	attempts uint32
 }
 
@@ -41,7 +45,7 @@ func (b *backoff) Fetch() <-chan struct{} {
 
 func (b *backoff) Jam() {
 	b.Lock()
-	if attempts < 30 { // max possible shifts for int32
+	if b.attempts < 30 { // max possible shifts for int32
 		b.attempts++
 	}
 	b.Unlock()
@@ -50,12 +54,13 @@ func (b *backoff) Jam() {
 func (b *backoff) Reset() {
 	b.Lock()
 	b.attempts = 0
+	b.reset <- struct{}{}
 	b.Unlock()
 }
 
 func (b *backoff) Stop() {
-	close(done)
-	<-stopped
+	close(b.done)
+	<-b.stopped
 }
 
 func (b *backoff) run(slotTime time.Duration, maxTime time.Duration) {
@@ -69,7 +74,7 @@ func (b *backoff) run(slotTime time.Duration, maxTime time.Duration) {
 			continue
 		}
 
-		wait := rand.Intn(1<<attempts) * slotTime
+		wait := time.Duration(rand.Int63n(1<<attempts) * slotTime.Nanoseconds())
 		if wait > maxTime {
 			wait = maxTime
 		}
@@ -78,7 +83,9 @@ func (b *backoff) run(slotTime time.Duration, maxTime time.Duration) {
 		case <-b.done:
 			close(b.stopped)
 			return
-		case <-After(wait):
+		case <-b.reset:
+			b.tick()
+		case <-time.After(wait):
 			b.tick()
 		}
 	}
