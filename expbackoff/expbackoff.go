@@ -61,6 +61,7 @@ func (b *backoff) Reset() {
 func (b *backoff) Stop() {
 	close(b.done)
 	<-b.stopped
+	close(b.c)
 }
 
 func (b *backoff) run(slotTime time.Duration, maxTime time.Duration) {
@@ -69,8 +70,6 @@ func (b *backoff) run(slotTime time.Duration, maxTime time.Duration) {
 		wait  time.Duration
 		ok    bool
 	)
-
-	defer close(b.c)
 
 	for {
 		b.RLock()
