@@ -64,38 +64,55 @@ func (b *backoff) Stop() {
 }
 
 func (b *backoff) run(slotTime time.Duration, maxTime time.Duration) {
+	var (
+		nanos int64
+		wait  time.Duration
+		ok    bool
+	)
+
+	defer close(b.c)
+
 	for {
 		b.RLock()
 		var attempts = b.attempts
 		b.RUnlock()
 
 		if attempts == 0 {
-			b.tick()
+			if ok = b.tick(); !ok {
+				return
+			}
 			continue
 		}
 
-		wait := time.Duration(rand.Int63n(1<<attempts) * slotTime.Nanoseconds())
-		if wait > maxTime {
-			wait = maxTime
+		nanos = (1<<attempts - 1) * slotTime.Nanoseconds()
+		if nanos > maxTime.Nanoseconds() {
+			nanos = maxTime.Nanoseconds()
 		}
+
+		wait = time.Duration(rand.Int63n(nanos))
 
 		select {
 		case <-b.done:
 			close(b.stopped)
 			return
 		case <-b.reset:
-			b.tick()
+			if ok = b.tick(); !ok {
+				return
+			}
 		case <-time.After(wait):
-			b.tick()
+			if ok = b.tick(); !ok {
+				return
+			}
 		}
 	}
 }
 
-func (b *backoff) tick() {
+func (b *backoff) tick() bool {
 	select {
 	case b.c <- struct{}{}:
+		return true
 	case <-b.done:
 		close(b.stopped)
-		return
+		return false
 	}
 }

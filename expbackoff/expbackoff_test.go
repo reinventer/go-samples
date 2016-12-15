@@ -11,6 +11,7 @@ import (
 // ok      github.com/reinventer/go-samples/expbackoff 2.109s
 func BenchmarkNoJam(b *testing.B) {
 	bo := New(time.Microsecond, time.Minute)
+	defer bo.Stop()
 
 	c := bo.Fetch()
 	b.RunParallel(func(pb *testing.PB) {
@@ -18,6 +19,4 @@ func BenchmarkNoJam(b *testing.B) {
 			<-c
 		}
 	})
-
-	// bo.Stop()
 }
