@@ -1,0 +1,27 @@
+# github.com/davecgh/go-spew v1.1.0
+github.com/davecgh/go-spew/spew
+# github.com/gogo/protobuf v1.3.0
+github.com/gogo/protobuf/proto
+# github.com/golang/protobuf v1.3.2
+github.com/golang/protobuf/proto
+# github.com/jackc/pgx v2.9.1-0.20161123185204-e96c105b55d4+incompatible
+github.com/jackc/pgx
+github.com/jackc/pgx/stdlib
+# github.com/jinzhu/inflection v0.0.0-20160817014601-74387dc39a75
+github.com/jinzhu/inflection
+# github.com/lib/pq v0.0.0-20161129221428-4a82388ebc51
+github.com/lib/pq
+github.com/lib/pq/oid
+# github.com/pmezard/go-difflib v1.0.0
+github.com/pmezard/go-difflib/difflib
+# github.com/stretchr/testify v1.4.0
+github.com/stretchr/testify/assert
+# gopkg.in/pg.v5 v5.1.6
+gopkg.in/pg.v5
+gopkg.in/pg.v5/internal
+gopkg.in/pg.v5/internal/parser
+gopkg.in/pg.v5/internal/pool
+gopkg.in/pg.v5/orm
+gopkg.in/pg.v5/types
+# gopkg.in/yaml.v2 v2.2.2
+gopkg.in/yaml.v2
